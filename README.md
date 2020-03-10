@@ -3,6 +3,7 @@ Bot for automatic proccess gitlab pull requests
 
 
 # Configuration
+ - app.gitlab.pr.userNames - usernames in gitLab, which PR's bot will check
 
 ```yml
 app:
