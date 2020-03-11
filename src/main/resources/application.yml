@@ -2,3 +2,10 @@ app:
   gitlab:
     url:
     token:
+  telegram:
+      token:
+      botName:
+      proxyHost:
+      proxyPort:
+      proxyUser:
+      proxyPassword:
