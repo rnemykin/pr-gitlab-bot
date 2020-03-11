@@ -9,3 +9,17 @@ app:
       proxyPort:
       proxyUser:
       proxyPassword:
+
+spring:
+  datasource:
+    url: jdbc:h2:file:./db/pr_message;AUTO_SERVER=TRUE
+    username: sa
+    password:
+    driverClassName: org.h2.Driver
+  jpa:
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate.format_sql: true
