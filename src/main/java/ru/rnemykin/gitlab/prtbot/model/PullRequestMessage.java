@@ -15,7 +15,7 @@ import java.util.UUID;
 @Data
 @Table
 @Entity
-public class PrMessage {
+public class PullRequestMessage {
     public enum Status {
         NEW, DELETED
     }
@@ -24,9 +24,9 @@ public class PrMessage {
     @GeneratedValue(generator = "uuid")
     @GenericGenerator(name = "uuid", strategy = "org.hibernate.id.UUIDGenerator")
     private UUID id;
-    private long chatId;
-    private long messageId;
-    private String pullRequestId;
+    private Long chatId;
+    private Integer messageId;
+    private Integer pullRequestId;
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.NEW;

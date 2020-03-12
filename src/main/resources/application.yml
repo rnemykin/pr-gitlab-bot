@@ -3,12 +3,16 @@ app:
     url:
     token:
   telegram:
-      token:
-      botName:
-      proxyHost:
-      proxyPort:
-      proxyUser:
-      proxyPassword:
+    token:
+    botName:
+    proxyHost:
+    proxyPort:
+    proxyUser:
+    proxyPassword:
+  job:
+    notifyAboutOpenedPr: 0 * 7-19 * * MON-FRI
+    notifyAboutMergedPr: '0 */2 7-19 * * MON-FRI'
+
 
 spring:
   datasource:
