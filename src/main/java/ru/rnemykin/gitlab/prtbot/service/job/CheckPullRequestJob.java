@@ -9,12 +9,14 @@ import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import ru.rnemykin.gitlab.prtbot.config.properties.CheckPullRequestProperties;
+import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
 import ru.rnemykin.gitlab.prtbot.service.PrMessageService;
 import ru.rnemykin.gitlab.prtbot.service.client.gitlab.GitLabServiceClient;
 import ru.rnemykin.gitlab.prtbot.service.client.telegram.TelegramServiceClient;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 @Component
@@ -45,12 +47,13 @@ public class CheckPullRequestJob {
         for (Integer userId : userIds) {
             List<MergeRequest> openedPullRequests = gitLabClient.findOpenedPullRequests(userId);
             for (MergeRequest pr : openedPullRequests) {
-                if (prMessageService.findByPrId(pr.getId()).isEmpty()) {
+                Optional<PullRequestMessage> prMessage = prMessageService.findByPrId(pr.getId());
+                if (prMessage.isEmpty()) {
                     telegramServiceClient
                             .newPrNotification(pr)
                             .ifPresent(msg -> prMessageService.createMessage(pr.getId(), msg.getMessageId(), msg.getChatId()));
                 } else {
-                    telegramServiceClient.updatePrMessage();
+                    telegramServiceClient.updatePrMessage(pr, prMessage.get());
                 }
             }
         }
