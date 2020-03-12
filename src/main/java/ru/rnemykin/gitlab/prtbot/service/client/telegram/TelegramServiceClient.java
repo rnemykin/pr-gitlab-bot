@@ -33,7 +33,7 @@ import static java.time.ZoneId.systemDefault;
 @Component
 @RequiredArgsConstructor
 public class TelegramServiceClient {
-    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n{2}\nOpened {3} by {4}";
+    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1}) from {2} to {3}\n{4}\nOpened {5} by {6}";
     private static final DateTimeFormatter RU_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private final TelegramProperties properties;
     private TelegramLongPollingBot telegramApi;
@@ -83,6 +83,8 @@ public class TelegramServiceClient {
                     PR_MESSAGE_TEMPLATE,
                     pr.getIid(),
                     pr.getWebUrl(),
+                    pr.getSourceBranch(),
+                    pr.getTargetBranch(),
                     pr.getTitle(),
                     RU_DATE_TIME_FORMATTER.format(LocalDateTime.ofInstant(pr.getCreatedAt().toInstant(), systemDefault())),
                     pr.getAuthor().getName()
@@ -107,7 +109,6 @@ public class TelegramServiceClient {
         }
         return Boolean.TRUE.equals(result);
     }
-
 
     public void updatePrMessage(MergeRequest pr, PullRequestMessage pullRequestMessage) {
 
