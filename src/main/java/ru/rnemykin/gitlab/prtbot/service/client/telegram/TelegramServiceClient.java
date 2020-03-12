@@ -33,7 +33,7 @@ import static java.time.ZoneId.systemDefault;
 @Component
 @RequiredArgsConstructor
 public class TelegramServiceClient {
-    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1}) from {2} to {3}\n{4}\nOpened {5} by {6}";
+    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}` -> `{3}`\n{4}\nOpened {5} by {6}";
     private static final DateTimeFormatter RU_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private final TelegramProperties properties;
     private TelegramLongPollingBot telegramApi;
