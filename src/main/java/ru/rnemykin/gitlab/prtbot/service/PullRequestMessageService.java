@@ -3,8 +3,8 @@ package ru.rnemykin.gitlab.prtbot.service;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
-import ru.rnemykin.gitlab.prtbot.model.PrMessageRepository;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
+import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository;
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotEmpty;
@@ -16,8 +16,8 @@ import java.util.UUID;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class PrMessageService {
-    private final PrMessageRepository repository;
+public class PullRequestMessageService {
+    private final PullRequestMessageRepository repository;
 
     public PullRequestMessage createMessage(@NotNull Integer prId, int messageId, long chatId) {
         PullRequestMessage entity = new PullRequestMessage();
