@@ -12,5 +12,6 @@ mvnw.*
 *.iml
 *.ipr
 
+/db
 /src/main/resources/config
 
