@@ -10,8 +10,8 @@ app:
     proxyUser:
     proxyPassword:
   job:
-    notifyAboutOpenedPr: 0 * 7-19 * * MON-FRI
-    notifyAboutMergedPr: '0 */2 7-19 * * MON-FRI'
+    notifyAboutMergedPr: 0 * 7-19 * * MON-FRI
+    notifyAboutOpenedPr: '0 */2 7-19 * * MON-FRI'
 
 
 spring:

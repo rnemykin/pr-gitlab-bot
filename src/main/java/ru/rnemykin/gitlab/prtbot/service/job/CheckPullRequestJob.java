@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import ru.rnemykin.gitlab.prtbot.config.properties.CheckPullRequestProperties;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
+import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
 import ru.rnemykin.gitlab.prtbot.service.PrMessageService;
 import ru.rnemykin.gitlab.prtbot.service.client.gitlab.GitLabServiceClient;
 import ru.rnemykin.gitlab.prtbot.service.client.telegram.TelegramServiceClient;
@@ -47,13 +48,22 @@ public class CheckPullRequestJob {
         for (Integer userId : userIds) {
             List<MergeRequest> openedPullRequests = gitLabClient.findOpenedPullRequests(userId);
             for (MergeRequest pr : openedPullRequests) {
-                Optional<PullRequestMessage> prMessage = prMessageService.findByPrId(pr.getId());
-                if (prMessage.isEmpty()) {
+                Optional<PullRequestMessage> found = prMessageService.findByPrId(pr.getId());
+                if (found.isEmpty()) {
                     telegramServiceClient
                             .newPrNotification(pr)
                             .ifPresent(msg -> prMessageService.createMessage(pr.getId(), msg.getMessageId(), msg.getChatId()));
                 } else {
-                    telegramServiceClient.updatePrMessage(pr, prMessage.get());
+                    PullRequestMessage prMessage = found.get();
+                    telegramServiceClient.updatePrMessage(
+                            PullRequestUpdateMessage.builder()
+                                    .request(pr)
+                                    .telegramChatId(prMessage.getChatId())
+                                    .telegramMessageId(prMessage.getMessageId())
+                                    .upVoterNames(gitLabClient.getUpVoterNames(pr.getProjectId(), pr.getIid()))
+                                    .unresolvedThreadsMap(gitLabClient.getUnresolvedThreadsMap(pr.getProjectId(), pr.getIid()))
+                                    .build()
+                    );
                 }
             }
         }
