@@ -17,6 +17,7 @@ import ru.rnemykin.gitlab.prtbot.service.client.gitlab.GitLabServiceClient;
 import ru.rnemykin.gitlab.prtbot.service.client.telegram.TelegramServiceClient;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -58,13 +59,16 @@ public class CheckPullRequestJob {
             result.ifPresent(msg -> prMessageService.createMessage(pr.getId(), msg.getMessageId(), msg.getChatId()));
         } else {
             PullRequestMessage prMessage = found.get();
+            Map<String, Long> unresolvedThreadsMap = gitLabClient.getUnresolvedThreadsMap(pr.getProjectId(), pr.getIid());
+            unresolvedThreadsMap.remove(pr.getAuthor().getName());
+
             telegramServiceClient.updatePrMessage(
                     PullRequestUpdateMessage.builder()
                             .request(pr)
                             .telegramChatId(prMessage.getChatId())
                             .telegramMessageId(prMessage.getMessageId())
                             .upVoterNames(gitLabClient.getUpVoterNames(pr.getProjectId(), pr.getIid()))
-                            .unresolvedThreadsMap(gitLabClient.getUnresolvedThreadsMap(pr.getProjectId(), pr.getIid()))
+                            .unresolvedThreadsMap(unresolvedThreadsMap)
                             .build()
             );
         }
