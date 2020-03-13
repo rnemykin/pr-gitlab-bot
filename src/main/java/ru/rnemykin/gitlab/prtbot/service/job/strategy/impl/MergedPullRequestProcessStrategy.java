@@ -1,6 +1,6 @@
 package ru.rnemykin.gitlab.prtbot.service.job.strategy.impl;
 
-import org.gitlab4j.api.Constants;
+import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.models.MergeRequest;
 import org.springframework.stereotype.Component;
 
@@ -30,7 +30,7 @@ public class MergedPullRequestProcessStrategy extends AbstractPullRequestProcess
     }
 
     @Override
-    public Constants.MergeRequestState type() {
-        return Constants.MergeRequestState.MERGED;
+    public MergeRequestState type() {
+        return MergeRequestState.MERGED;
     }
 }

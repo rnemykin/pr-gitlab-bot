@@ -1,6 +1,6 @@
 package ru.rnemykin.gitlab.prtbot.service.job.strategy.impl;
 
-import org.gitlab4j.api.Constants;
+import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.models.MergeRequest;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.objects.Message;
@@ -51,7 +51,7 @@ public class OpenedPullRequestProcessStrategy extends AbstractPullRequestProcess
     }
 
     @Override
-    public Constants.MergeRequestState type() {
-        return Constants.MergeRequestState.OPENED;
+    public MergeRequestState type() {
+        return MergeRequestState.OPENED;
     }
 }

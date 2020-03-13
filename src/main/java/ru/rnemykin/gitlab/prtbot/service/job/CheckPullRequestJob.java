@@ -1,7 +1,7 @@
 package ru.rnemykin.gitlab.prtbot.service.job;
 
 import lombok.RequiredArgsConstructor;
-import org.gitlab4j.api.Constants;
+import org.gitlab4j.api.Constants.MergeRequestState;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import ru.rnemykin.gitlab.prtbot.service.job.strategy.PullRequestProcessStrategyFactory;
@@ -14,12 +14,12 @@ public class CheckPullRequestJob {
 
     @Scheduled(cron = "${app.job.notifyAboutOpenedPr}")
     public void notifyAboutOpenedPr() {
-        strategyFactory.get(Constants.MergeRequestState.OPENED).process();
+        strategyFactory.get(MergeRequestState.OPENED).process();
     }
 
     @Scheduled(cron = "${app.job.notifyAboutMergedPr}")
     public void notifyAboutMergedPr() {
-        strategyFactory.get(Constants.MergeRequestState.MERGED).process();
+        strategyFactory.get(MergeRequestState.MERGED).process();
     }
 
 }
