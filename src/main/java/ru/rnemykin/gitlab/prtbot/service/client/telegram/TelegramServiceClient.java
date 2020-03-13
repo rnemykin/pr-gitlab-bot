@@ -27,13 +27,14 @@ import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
+import java.time.LocalDate;
+import java.util.Date;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
 import static java.time.ZoneId.systemDefault;
+import static java.time.temporal.ChronoUnit.DAYS;
 
 @Slf4j
 @Component
@@ -41,8 +42,7 @@ import static java.time.ZoneId.systemDefault;
 public class TelegramServiceClient {
     private static final String UP_VOTERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
-    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}` -> `{3}`\n{4}\nOpened {5} by {6}";
-    private static final DateTimeFormatter RU_DATE_TIME_FORMATTER = DateTimeFormatter.ofPattern("dd MMMM HH:mm");
+    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}` -> `{3}`\n{4}\nOpened __{5}__ by {6}";
     private final TelegramProperties properties;
     private TelegramLongPollingBot telegramApi;
 
@@ -96,14 +96,14 @@ public class TelegramServiceClient {
     private String makePrMessageText(MergeRequest pr) {
         return MessageFormat.format(
                 PR_MESSAGE_TEMPLATE,
-                pr.getIid(),
-                pr.getWebUrl(),
-                pr.getSourceBranch(),
-                pr.getTargetBranch(),
-                pr.getTitle(),
-                RU_DATE_TIME_FORMATTER.format(LocalDateTime.ofInstant(pr.getCreatedAt().toInstant(), systemDefault())),
-                pr.getAuthor().getName()
+                pr.getIid(), pr.getWebUrl(), pr.getSourceBranch(), pr.getTargetBranch(),
+                pr.getTitle(), getPassDaysText(pr.getCreatedAt()), pr.getAuthor().getName()
         );
+    }
+
+    private String getPassDaysText(Date createdDate) {
+        long daysCount = DAYS.between(LocalDate.ofInstant(createdDate.toInstant(), systemDefault()), LocalDate.now());
+        return daysCount == 0 ? "today" : (daysCount == 1 ? "1 day" : daysCount + " days") + " ago";
     }
 
     public boolean deleteMessage(int messageId, long chatId) {
