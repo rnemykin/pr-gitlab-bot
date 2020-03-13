@@ -8,6 +8,7 @@ import org.springframework.context.event.EventListener;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.rnemykin.gitlab.prtbot.config.properties.CheckPullRequestProperties;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
@@ -46,40 +47,42 @@ public class CheckPullRequestJob {
     @Scheduled(cron = "${app.job.notifyAboutOpenedPr}")
     public void notifyAboutOpenedPr() {
         for (Integer userId : userIds) {
-            List<MergeRequest> openedPullRequests = gitLabClient.findOpenedPullRequests(userId);
-            for (MergeRequest pr : openedPullRequests) {
-                Optional<PullRequestMessage> found = prMessageService.findByPrId(pr.getId());
-                if (found.isEmpty()) {
-                    telegramServiceClient
-                            .newPrNotification(pr)
-                            .ifPresent(msg -> prMessageService.createMessage(pr.getId(), msg.getMessageId(), msg.getChatId()));
-                } else {
-                    PullRequestMessage prMessage = found.get();
-                    telegramServiceClient.updatePrMessage(
-                            PullRequestUpdateMessage.builder()
-                                    .request(pr)
-                                    .telegramChatId(prMessage.getChatId())
-                                    .telegramMessageId(prMessage.getMessageId())
-                                    .upVoterNames(gitLabClient.getUpVoterNames(pr.getProjectId(), pr.getIid()))
-                                    .unresolvedThreadsMap(gitLabClient.getUnresolvedThreadsMap(pr.getProjectId(), pr.getIid()))
-                                    .build()
-                    );
-                }
-            }
+            gitLabClient.findOpenedPullRequests(userId).forEach(this::processOpenedPullRequest);
+        }
+    }
+
+    private void processOpenedPullRequest(MergeRequest pr) {
+        Optional<PullRequestMessage> found = prMessageService.findByPrId(pr.getId());
+        if (found.isEmpty()) {
+            Optional<Message> result = telegramServiceClient.newPrNotification(pr);
+            result.ifPresent(msg -> prMessageService.createMessage(pr.getId(), msg.getMessageId(), msg.getChatId()));
+        } else {
+            PullRequestMessage prMessage = found.get();
+            telegramServiceClient.updatePrMessage(
+                    PullRequestUpdateMessage.builder()
+                            .request(pr)
+                            .telegramChatId(prMessage.getChatId())
+                            .telegramMessageId(prMessage.getMessageId())
+                            .upVoterNames(gitLabClient.getUpVoterNames(pr.getProjectId(), pr.getIid()))
+                            .unresolvedThreadsMap(gitLabClient.getUnresolvedThreadsMap(pr.getProjectId(), pr.getIid()))
+                            .build()
+            );
         }
     }
 
     @Scheduled(cron = "${app.job.notifyAboutMergedPr}")
     public void notifyAboutMergedPr() {
         for (Integer userId : userIds) {
-            List<MergeRequest> mergedPullRequests = gitLabClient.findMergedPullRequests(userId);
-            for (MergeRequest pr : mergedPullRequests) {
-                prMessageService.findByPrId(pr.getId()).ifPresent(msg -> {
-                    if (telegramServiceClient.deleteMessage(msg.getMessageId(), msg.getChatId())) {
-                        prMessageService.archiveMessage(msg.getId());
-                    }
-                });
-            }
+            gitLabClient.findMergedPullRequests(userId).forEach(this::processMergedPullRequest);
         }
+    }
+
+    private void processMergedPullRequest(MergeRequest pr) {
+        prMessageService.findByPrId(pr.getId()).ifPresent(msg -> {
+            boolean success = telegramServiceClient.deleteMessage(msg.getMessageId(), msg.getChatId());
+            if (success) {
+                prMessageService.archiveMessage(msg.getId());
+            }
+        });
     }
 }

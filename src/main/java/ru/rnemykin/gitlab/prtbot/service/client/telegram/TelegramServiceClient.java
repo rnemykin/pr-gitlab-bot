@@ -11,6 +11,7 @@ import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.ApiContext;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
+import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
@@ -22,6 +23,7 @@ import ru.rnemykin.gitlab.prtbot.config.properties.TelegramProperties;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
 
 import javax.annotation.PostConstruct;
+import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
@@ -81,21 +83,17 @@ public class TelegramServiceClient {
         new TelegramBotsApi().registerBot(telegramApi);
     }
 
+
     public Optional<Message> newPrNotification(MergeRequest pr) {
-        try {
-            SendMessage message = new SendMessage();
-            message.setChatId(properties.getChatId());
-            message.setText(makePrMessage(pr));
-            message.disableWebPagePreview();
-            message.setParseMode(ParseMode.MARKDOWN);
-            return Optional.of(telegramApi.execute(message));
-        } catch (Exception ex) {
-            log.error("can't sent message for pr {}", pr, ex);
-            return Optional.empty();
-        }
+        SendMessage message = new SendMessage();
+        message.setChatId(properties.getChatId());
+        message.setText(makePrMessageText(pr));
+        message.disableWebPagePreview();
+        message.setParseMode(ParseMode.MARKDOWN);
+        return Optional.ofNullable(executeMethod(message));
     }
 
-    private String makePrMessage(MergeRequest pr) {
+    private String makePrMessageText(MergeRequest pr) {
         return MessageFormat.format(
                 PR_MESSAGE_TEMPLATE,
                 pr.getIid(),
@@ -108,34 +106,32 @@ public class TelegramServiceClient {
         );
     }
 
-    public Boolean deleteMessage(int messageId, long chatId) {
-        DeleteMessage method = new DeleteMessage(chatId, messageId);
-        Boolean result;
-        try {
-            result = telegramApi.execute(method);
-        } catch (TelegramApiException ex) {
-            log.error("can't delete message[id={}, chatId={}]", messageId, chatId, ex);
-            result = false;
-        }
+    public boolean deleteMessage(int messageId, long chatId) {
+        Boolean result = executeMethod(new DeleteMessage(chatId, messageId));
         return Boolean.TRUE.equals(result);
+    }
+
+    private <T extends Serializable> T executeMethod(BotApiMethod<T> method) {
+        try {
+            return telegramApi.execute(method);
+        } catch (TelegramApiException ex) {
+            log.error("can't execute method {}", method, ex);
+            return null;
+        }
     }
 
     public void updatePrMessage(PullRequestUpdateMessage data) {
         EditMessageText editMsg = new EditMessageText();
-        editMsg.setText(makeUpdatePrMessage(data));
+        editMsg.setText(makeUpdatePrMessageText(data));
         editMsg.setChatId(data.getTelegramChatId());
         editMsg.setMessageId(data.getTelegramMessageId());
         editMsg.setParseMode(ParseMode.MARKDOWN);
         editMsg.disableWebPagePreview();
-        try {
-            telegramApi.execute(editMsg);
-        } catch (TelegramApiException ex) {
-            log.error("can't edit message[id={}, chatId={}]", data.getTelegramMessageId(), data.getTelegramChatId(), ex);
-        }
+        executeMethod(editMsg);
     }
 
-    private String makeUpdatePrMessage(PullRequestUpdateMessage data) {
-        String text = makePrMessage(data.getRequest());
+    private String makeUpdatePrMessageText(PullRequestUpdateMessage data) {
+        String text = makePrMessageText(data.getRequest());
         if (!CollectionUtils.isEmpty(data.getUnresolvedThreadsMap())) {
             text += MessageFormat.format(
                     UNRESOLVED_THREADS_MESSAGE_TEMPLATE,
@@ -147,7 +143,7 @@ public class TelegramServiceClient {
 
         List<String> upVoterNames = data.getUpVoterNames();
         if(!CollectionUtils.isEmpty(upVoterNames)) {
-            text += MessageFormat.format(UP_VOTERS_MESSAGE_TEMPLATE, upVoterNames.size(), String.join(" ,", upVoterNames));
+            text += MessageFormat.format(UP_VOTERS_MESSAGE_TEMPLATE, upVoterNames.size(), String.join(", ", upVoterNames));
         }
         return text;
     }
