@@ -16,6 +16,7 @@ import javax.validation.constraints.NotEmpty;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 @RequiredArgsConstructor
@@ -33,12 +34,15 @@ public class GitLabServiceClient {
         return findPullRequests(authorId, MergeRequestState.OPENED);
     }
 
-    public List<MergeRequest> findMergedPullRequests(int authorId) {
-        return findPullRequests(authorId, MergeRequestState.MERGED);
+    public List<MergeRequest> findCompletedPullRequests(int authorId) {
+        return Stream.concat(
+                findPullRequests(authorId, MergeRequestState.MERGED).stream(),
+                findPullRequests(authorId, MergeRequestState.CLOSED).stream()
+        ).collect(Collectors.toList());
     }
 
     @SneakyThrows
-    public List<MergeRequest> findPullRequests(int authorId, MergeRequestState state) {
+    private List<MergeRequest> findPullRequests(int authorId, MergeRequestState state) {
         MergeRequestFilter filter = new MergeRequestFilter();
         filter.setAuthorId(authorId);
         filter.setState(state);
