@@ -9,12 +9,15 @@ import org.gitlab4j.api.models.AbstractUser;
 import org.gitlab4j.api.models.AwardEmoji;
 import org.gitlab4j.api.models.MergeRequest;
 import org.gitlab4j.api.models.MergeRequestFilter;
+import org.gitlab4j.api.models.Pipeline;
 import org.gitlab4j.api.models.User;
 import org.springframework.stereotype.Component;
 
 import javax.validation.constraints.NotEmpty;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -67,6 +70,13 @@ public class GitLabServiceClient {
                 .map(AwardEmoji::getUser)
                 .map(AbstractUser::getName)
                 .collect(Collectors.toList());
+    }
+
+    @SneakyThrows
+    public Optional<Pipeline> findLastPipeline(int projectId, int pullRequestNumber) {
+        return apiClient.getMergeRequestApi()
+                .getMergeRequestPipelinesStream(projectId, pullRequestNumber)
+                .max(Comparator.comparingInt(Pipeline::getId));
     }
 
 }

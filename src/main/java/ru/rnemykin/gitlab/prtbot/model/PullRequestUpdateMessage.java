@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import org.gitlab4j.api.models.MergeRequest;
+import org.gitlab4j.api.models.Pipeline;
 
 import java.util.List;
 import java.util.Map;
@@ -19,4 +20,5 @@ public class PullRequestUpdateMessage {
     private MergeRequest request;
     private List<String> upVoterNames;
     private Map<String, Long> unresolvedThreadsMap;
+    private Pipeline lastPipeline;
 }

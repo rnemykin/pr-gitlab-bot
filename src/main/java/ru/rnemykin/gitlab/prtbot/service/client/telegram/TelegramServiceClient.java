@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.gitlab4j.api.models.MergeRequest;
+import org.gitlab4j.api.models.Pipeline;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -42,7 +43,8 @@ import static java.time.temporal.ChronoUnit.DAYS;
 public class TelegramServiceClient {
     private static final String UP_VOTERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
-    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}` -> `{3}`\n{4}\nOpened __{5}__ by {6}";
+    private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
+    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}` -> `{3}`\n\n{4}\nOpened __{5}__ by {6}";
     private final TelegramProperties properties;
     private TelegramLongPollingBot telegramApi;
 
@@ -132,6 +134,15 @@ public class TelegramServiceClient {
 
     private String makeUpdatePrMessageText(PullRequestUpdateMessage data) {
         String text = makePrMessageText(data.getRequest());
+
+        if (data.getLastPipeline() != null) {
+            text += MessageFormat.format(
+                    PIPELINE_MESSAGE_TEMPLATE,
+                    data.getLastPipeline().getWebUrl(),
+                    getPipelineStatusIcon(data.getLastPipeline())
+            );
+        }
+
         if (!CollectionUtils.isEmpty(data.getUnresolvedThreadsMap())) {
             text += MessageFormat.format(
                     UNRESOLVED_THREADS_MESSAGE_TEMPLATE,
@@ -146,5 +157,24 @@ public class TelegramServiceClient {
             text += MessageFormat.format(UP_VOTERS_MESSAGE_TEMPLATE, upVoterNames.size(), String.join(", ", upVoterNames));
         }
         return text;
+    }
+
+    private String getPipelineStatusIcon(Pipeline pipeline) {
+        switch (pipeline.getStatus()) {
+            case FAILED:
+                return "\uD83D\uDD34";
+
+            case SUCCESS:
+                return "\uD83D\uDFE2";
+
+            case RUNNING:
+                return "\uD83D\uDD35";
+            case CANCELED:
+                return "\uD83D\uDFE1";
+
+            default:
+                return "\uD83E\uDD37\u200D";
+        }
+
     }
 }

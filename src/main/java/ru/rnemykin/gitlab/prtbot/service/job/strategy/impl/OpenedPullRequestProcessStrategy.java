@@ -37,6 +37,7 @@ public class OpenedPullRequestProcessStrategy extends AbstractPullRequestProcess
                             .telegramMessageId(prMessage.getMessageId())
                             .upVoterNames(gitLabClient.getUpVoterNames(pr.getProjectId(), pr.getIid()))
                             .unresolvedThreadsMap(unresolvedThreadsMap)
+                            .lastPipeline(gitLabClient.findLastPipeline(pr.getProjectId(), pr.getIid()).orElse(null))
                             .build()
             );
         };
