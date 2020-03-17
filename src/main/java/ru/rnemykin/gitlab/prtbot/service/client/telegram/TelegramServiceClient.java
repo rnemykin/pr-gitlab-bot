@@ -44,7 +44,7 @@ public class TelegramServiceClient {
     private static final String UP_VOTERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
-    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}` -> `{3}`\n\n{4}\nOpened __{5}__ by {6}";
+    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}` \uD83D\uDC49 `{3}`\n\n{4}\nOpened __{5}__ by {6}";
     private final TelegramProperties properties;
     private TelegramLongPollingBot telegramApi;
 
