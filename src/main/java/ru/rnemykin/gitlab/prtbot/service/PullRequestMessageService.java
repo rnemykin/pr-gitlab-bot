@@ -3,9 +3,11 @@ package ru.rnemykin.gitlab.prtbot.service;
 import lombok.RequiredArgsConstructor;
 import org.gitlab4j.api.models.MergeRequest;
 import org.springframework.data.domain.Example;
+import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
+import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageFilter;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository;
 
 import javax.transaction.Transactional;
@@ -45,5 +47,9 @@ public class PullRequestMessageService {
         PullRequestMessage message = new PullRequestMessage();
         message.setPullRequestId(pullRequestId);
         return repository.findOne(Example.of(message));
+    }
+
+    public Page<PullRequestMessage> findAll(PullRequestMessageFilter filter) {
+        return repository.findAll(filter, filter.getPage());
     }
 }
