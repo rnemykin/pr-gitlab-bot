@@ -22,7 +22,7 @@ public class OpenedPullRequestProcessStrategy extends AbstractPullRequestProcess
             Optional<PullRequestMessage> found = prMessageService.findByPrId(pr.getId());
             if (found.isEmpty()) {
                 Optional<Message> result = telegramClient.newPrNotification(pr);
-                result.ifPresent(msg -> prMessageService.createMessage(pr.getId(), msg.getMessageId(), msg.getChatId()));
+                result.ifPresent(msg -> prMessageService.createMessage(pr, msg));
                 return;
             }
 

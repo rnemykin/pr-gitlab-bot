@@ -27,6 +27,7 @@ public class PullRequestMessage {
     private Long chatId;
     private Integer messageId;
     private Integer pullRequestId;
+    private Integer pullRequestNumber;
 
     @Enumerated(EnumType.STRING)
     private Status status = Status.NEW;

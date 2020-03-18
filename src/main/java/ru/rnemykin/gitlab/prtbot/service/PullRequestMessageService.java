@@ -1,8 +1,10 @@
 package ru.rnemykin.gitlab.prtbot.service;
 
 import lombok.RequiredArgsConstructor;
+import org.gitlab4j.api.models.MergeRequest;
 import org.springframework.data.domain.Example;
 import org.springframework.stereotype.Service;
+import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository;
 
@@ -19,11 +21,12 @@ import java.util.UUID;
 public class PullRequestMessageService {
     private final PullRequestMessageRepository repository;
 
-    public PullRequestMessage createMessage(@NotNull Integer prId, int messageId, long chatId) {
+    public PullRequestMessage createMessage(MergeRequest pr, Message msg) {
         PullRequestMessage entity = new PullRequestMessage();
-        entity.setChatId(chatId);
-        entity.setMessageId(messageId);
-        entity.setPullRequestId(prId);
+        entity.setChatId(msg.getChatId());
+        entity.setMessageId(msg.getMessageId());
+        entity.setPullRequestId(pr.getId());
+        entity.setPullRequestNumber(pr.getIid());
         entity.setStatus(PullRequestMessage.Status.NEW);
         return repository.save(entity);
     }
