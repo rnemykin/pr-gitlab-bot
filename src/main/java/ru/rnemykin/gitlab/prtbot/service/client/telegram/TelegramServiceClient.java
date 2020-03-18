@@ -24,6 +24,7 @@ import ru.rnemykin.gitlab.prtbot.config.properties.TelegramProperties;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
 
 import javax.annotation.PostConstruct;
+import javax.validation.constraints.NotEmpty;
 import java.io.Serializable;
 import java.net.Authenticator;
 import java.net.PasswordAuthentication;
@@ -32,6 +33,7 @@ import java.time.LocalDate;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import static java.time.ZoneId.systemDefault;
@@ -41,6 +43,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Component
 @RequiredArgsConstructor
 public class TelegramServiceClient {
+    private static final Pattern MARKUP_ESCAPE_PATTERN = Pattern.compile("['*(_\\[]");
     private static final String UP_VOTERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
@@ -99,7 +102,7 @@ public class TelegramServiceClient {
         return MessageFormat.format(
                 PR_MESSAGE_TEMPLATE,
                 pr.getIid(), pr.getWebUrl(), pr.getSourceBranch(), pr.getTargetBranch(),
-                pr.getTitle(), getPassDaysText(pr.getCreatedAt()), pr.getAuthor().getName()
+                escapeMarkupChars(pr.getTitle()), getPassDaysText(pr.getCreatedAt()), pr.getAuthor().getName()
         );
     }
 
@@ -176,5 +179,9 @@ public class TelegramServiceClient {
                 return "\uD83E\uDD37\u200D";
         }
 
+    }
+
+    private String escapeMarkupChars(@NotEmpty String source) {
+        return MARKUP_ESCAPE_PATTERN.matcher(source).replaceAll(m -> "\\\\\\\\" + m.group());
     }
 }
