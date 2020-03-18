@@ -26,7 +26,7 @@ public class PullRequestMessageService {
         entity.setChatId(msg.getChatId());
         entity.setMessageId(msg.getMessageId());
         entity.setPullRequestId(pr.getId());
-        entity.setPullRequestNumber(pr.getIid());
+        entity.setPullRequestUrl(pr.getWebUrl());
         entity.setStatus(PullRequestMessage.Status.NEW);
         return repository.save(entity);
     }
