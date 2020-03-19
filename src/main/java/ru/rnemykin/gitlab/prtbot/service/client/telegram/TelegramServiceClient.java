@@ -43,7 +43,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Component
 @RequiredArgsConstructor
 public class TelegramServiceClient {
-    private static final Pattern MARKUP_ESCAPE_PATTERN = Pattern.compile("['*(_\\[]");
+    private static final Pattern MARKUP_ESCAPE_PATTERN = Pattern.compile("[`*_]");
     private static final String UP_VOTERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
