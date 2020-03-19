@@ -108,7 +108,7 @@ public class TelegramServiceClient {
 
     private String getPassDaysText(Date createdDate) {
         long daysCount = DAYS.between(LocalDate.ofInstant(createdDate.toInstant(), systemDefault()), LocalDate.now());
-        return daysCount == 0 ? "today" : (daysCount == 1 ? "1 day" : daysCount + " days") + " ago";
+        return daysCount == 0 ? "today" : (daysCount == 1 ? "1 day" : daysCount + " days") + " ago \uD83D\uDE31";
     }
 
     public boolean deleteMessage(int messageId, long chatId) {
