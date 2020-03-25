@@ -50,6 +50,7 @@ public class GitLabServiceClient {
         filter.setAuthorId(authorId);
         filter.setState(state);
         filter.setScope(Constants.MergeRequestScope.ALL);
+        filter.setOrderBy(Constants.MergeRequestOrderBy.CREATED_AT);
         return apiClient.getMergeRequestApi().getMergeRequests(filter);
     }
 
