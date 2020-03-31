@@ -8,6 +8,7 @@ import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
 
 import java.util.Collection;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -48,6 +49,7 @@ public class OpenedPullRequestProcessStrategy extends AbstractPullRequestProcess
         return userStorage.getUserIds().stream()
                 .map(gitLabClient::findOpenedPullRequests)
                 .flatMap(Collection::stream)
+                .sorted(Comparator.comparingInt(MergeRequest::getIid))
                 .collect(Collectors.toList());
     }
 
