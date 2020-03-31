@@ -30,6 +30,8 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.text.MessageFormat;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.Date;
 import java.util.List;
 import java.util.Optional;
@@ -48,6 +50,8 @@ public class TelegramServiceClient {
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
     private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}`  \uD83D\uDC49  `{3}`\n\n{4}\nOpened __{5}__ by {6}";
+    private static final String UPDATE_TIME_TEMPLATE = "\n\nLast check: {0}";
+    private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private final TelegramProperties properties;
     private TelegramLongPollingBot telegramApi;
 
@@ -159,6 +163,8 @@ public class TelegramServiceClient {
         if(!CollectionUtils.isEmpty(upVoterNames)) {
             text += MessageFormat.format(UP_VOTERS_MESSAGE_TEMPLATE, upVoterNames.size(), String.join(", ", upVoterNames));
         }
+
+        text += MessageFormat.format(UPDATE_TIME_TEMPLATE, DTF.format(LocalDateTime.now()));
         return text;
     }
 
