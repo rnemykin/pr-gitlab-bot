@@ -24,4 +24,5 @@ spring:
     generate-ddl: true
     hibernate:
       ddl-auto: update
+  logging.file: /logs/pr-bot.log
 
