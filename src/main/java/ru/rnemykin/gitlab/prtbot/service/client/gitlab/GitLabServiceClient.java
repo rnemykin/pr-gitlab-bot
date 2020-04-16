@@ -12,20 +12,27 @@ import org.gitlab4j.api.models.MergeRequestFilter;
 import org.gitlab4j.api.models.Pipeline;
 import org.gitlab4j.api.models.User;
 import org.springframework.stereotype.Component;
+import ru.rnemykin.gitlab.prtbot.config.properties.CheckPullRequestProperties;
 
 import javax.validation.constraints.NotEmpty;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Comparator;
+import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import static java.time.ZoneId.systemDefault;
+
 @Component
 @RequiredArgsConstructor
 public class GitLabServiceClient {
     private static final String UPVOTE_EMOJI_ID = "thumbsup";
     private final GitLabApi apiClient;
+    private final CheckPullRequestProperties checkPrProperties;
 
 
     @SneakyThrows
@@ -52,6 +59,11 @@ public class GitLabServiceClient {
         filter.setScope(Constants.MergeRequestScope.ALL);
         filter.setOrderBy(Constants.MergeRequestOrderBy.CREATED_AT);
         filter.setSort(Constants.SortOrder.ASC);
+
+        if(checkPrProperties.getSkippPrDaysPassCount() != null) {
+            LocalDateTime createAfterDate = LocalDate.now().minusDays(checkPrProperties.getSkippPrDaysPassCount().toDays()).atStartOfDay();
+            filter.setCreatedAfter(Date.from(createAfterDate.atZone(systemDefault()).toInstant()));
+        }
         return apiClient.getMergeRequestApi().getMergeRequests(filter);
     }
 
