@@ -13,7 +13,6 @@ import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository;
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -29,18 +28,11 @@ public class PullRequestMessageService {
         entity.setMessageId(msg.getMessageId());
         entity.setPullRequestId(pr.getId());
         entity.setPullRequestUrl(pr.getWebUrl());
-        entity.setStatus(PullRequestMessage.Status.NEW);
         return repository.save(entity);
     }
 
-    public void archiveMessage(@NotEmpty UUID id) {
-        PullRequestMessage entity = repository
-                .findById(id)
-                .orElseThrow(() -> new RuntimeException("not found, id = " + id));
-
-        entity.setStatus(PullRequestMessage.Status.DELETED);
-        entity.setDeleteTime(LocalDateTime.now());
-        repository.save(entity);
+    public void deleteMessage(@NotEmpty UUID id) {
+        repository.deleteById(id);
     }
 
     public Optional<PullRequestMessage> findByPrId(@NotNull Integer pullRequestId) {
