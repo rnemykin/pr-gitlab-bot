@@ -22,6 +22,8 @@ import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.rnemykin.gitlab.prtbot.config.properties.TelegramProperties;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
+import ru.rnemykin.gitlab.prtbot.model.RegularMessage;
+import ru.rnemykin.gitlab.prtbot.service.RegularMessageService;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotEmpty;
@@ -53,6 +55,7 @@ public class TelegramServiceClient {
     private static final String UPDATE_TIME_TEMPLATE = "\n\nLast check: {0}";
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private final TelegramProperties properties;
+    private final RegularMessageService regularMessageService;
     private TelegramLongPollingBot telegramApi;
 
 
@@ -75,7 +78,13 @@ public class TelegramServiceClient {
         telegramApi = new TelegramLongPollingBot(options) {
             @Override
             public void onUpdateReceived(Update update) {
-
+                Message message = update.getMessage();
+                if (Boolean.TRUE.equals(message.getFrom().getBot())) {
+                    RegularMessage msg = new RegularMessage();
+                    msg.setChatId(message.getChatId());
+                    msg.setMessageId(message.getMessageId());
+                    regularMessageService.save(msg);
+                }
             }
 
             @Override
@@ -160,7 +169,7 @@ public class TelegramServiceClient {
         }
 
         List<String> upVoterNames = data.getUpVoterNames();
-        if(!CollectionUtils.isEmpty(upVoterNames)) {
+        if (!CollectionUtils.isEmpty(upVoterNames)) {
             text += MessageFormat.format(UP_VOTERS_MESSAGE_TEMPLATE, upVoterNames.size(), String.join(", ", upVoterNames));
         }
 
