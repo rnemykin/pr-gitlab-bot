@@ -79,7 +79,7 @@ public class TelegramServiceClient {
             @Override
             public void onUpdateReceived(Update update) {
                 Message message = update.getMessage();
-                if (Boolean.TRUE.equals(message.getFrom().getBot())) {
+                if (!Boolean.TRUE.equals(message.getFrom().getBot())) {
                     RegularMessage msg = new RegularMessage();
                     msg.setChatId(message.getChatId());
                     msg.setMessageId(message.getMessageId());
