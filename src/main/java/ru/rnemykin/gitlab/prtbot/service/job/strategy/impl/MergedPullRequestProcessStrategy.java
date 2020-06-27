@@ -20,7 +20,7 @@ public class MergedPullRequestProcessStrategy extends AbstractPullRequestProcess
             boolean success = telegramClient.deleteMessage(msg.getMessageId(), msg.getChatId());
             if (success) {
                 log.info("delete PR{number: {}, status: {}}", pr.getIid(), pr.getMergeStatus());
-                prMessageService.deleteMessage(msg.getId());
+                prMessageService.delete(msg);
             }
         });
     }

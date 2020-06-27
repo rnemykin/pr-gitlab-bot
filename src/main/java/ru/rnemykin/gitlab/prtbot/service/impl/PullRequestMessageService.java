@@ -1,4 +1,4 @@
-package ru.rnemykin.gitlab.prtbot.service;
+package ru.rnemykin.gitlab.prtbot.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.gitlab4j.api.models.MergeRequest;
@@ -11,17 +11,13 @@ import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageFilter;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository;
 
 import javax.transaction.Transactional;
-import javax.validation.constraints.NotEmpty;
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
-import java.util.UUID;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class PullRequestMessageService {
-    private final PullRequestMessageRepository repository;
-
+public class PullRequestMessageService extends AbstractEntityService<PullRequestMessage, PullRequestMessageRepository> {
     public PullRequestMessage createMessage(MergeRequest pr, Message msg) {
         PullRequestMessage entity = new PullRequestMessage();
         entity.setChatId(msg.getChatId());
@@ -29,10 +25,6 @@ public class PullRequestMessageService {
         entity.setPullRequestId(pr.getId());
         entity.setPullRequestUrl(pr.getWebUrl());
         return repository.save(entity);
-    }
-
-    public void deleteMessage(@NotEmpty UUID id) {
-        repository.deleteById(id);
     }
 
     public Optional<PullRequestMessage> findByPrId(@NotNull Integer pullRequestId) {

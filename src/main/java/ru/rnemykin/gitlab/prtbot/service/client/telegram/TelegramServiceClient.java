@@ -23,7 +23,7 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import ru.rnemykin.gitlab.prtbot.config.properties.TelegramProperties;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
 import ru.rnemykin.gitlab.prtbot.model.RegularMessage;
-import ru.rnemykin.gitlab.prtbot.service.RegularMessageService;
+import ru.rnemykin.gitlab.prtbot.service.impl.RegularMessageService;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotEmpty;

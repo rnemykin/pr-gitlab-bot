@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageFilter;
-import ru.rnemykin.gitlab.prtbot.service.PullRequestMessageService;
+import ru.rnemykin.gitlab.prtbot.service.impl.PullRequestMessageService;
 
 @RestController
 @RequestMapping("/api/v1/pull-request-messages")

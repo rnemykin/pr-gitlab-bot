@@ -4,6 +4,7 @@ app:
     token:
     pr:
       skippPrDaysPassCount: 60d
+      regularMessagesTtl: 1d
   telegram:
     token:
     botName:
@@ -14,6 +15,7 @@ app:
   job:
     notifyAboutMergedPr: 0 * 7-19 * * MON-FRI
     notifyAboutOpenedPr: '0 */2 7-19 * * MON-FRI'
+    deleteRegularMessages: 0 59 23 * * *
 
 
 spring:
