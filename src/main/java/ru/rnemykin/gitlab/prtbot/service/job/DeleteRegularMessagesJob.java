@@ -29,7 +29,7 @@ public class DeleteRegularMessagesJob {
             if(telegramServiceClient.deleteMessage(message.getMessageId(), message.getChatId())) {
                 regularMessageService.delete(message);
             } else {
-                log.warn("can't delete regular message, id = ", message.getId());
+                log.warn("can't delete regular message, id = {}", message.getId());
             }
         }
     }
