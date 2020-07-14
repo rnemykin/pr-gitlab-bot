@@ -47,11 +47,12 @@ import static java.time.temporal.ChronoUnit.DAYS;
 @Component
 @RequiredArgsConstructor
 public class TelegramServiceClient {
+    private static final String REFACTORING_LABEL = "refactoring";
     private static final Pattern MARKUP_ESCAPE_PATTERN = Pattern.compile("[`*_]");
     private static final String UP_VOTERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
-    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}`  \uD83D\uDC49  `{3}`\n\n{4}\nOpened __{5}__ by {6}";
+    private static final String PR_MESSAGE_TEMPLATE = "[Pull request !{0}]({1})\n`{2}`  \uD83D\uDC49  `{3}` {7}\n\n{4}\nOpened __{5}__ by {6}";
     private static final String UPDATE_TIME_TEMPLATE = "\n\nLast check: {0}";
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private final TelegramProperties properties;
@@ -115,7 +116,8 @@ public class TelegramServiceClient {
         return MessageFormat.format(
                 PR_MESSAGE_TEMPLATE,
                 pr.getIid(), pr.getWebUrl(), pr.getSourceBranch(), pr.getTargetBranch(),
-                escapeMarkupChars(pr.getTitle()), getPassDaysText(pr.getCreatedAt()), pr.getAuthor().getName()
+                escapeMarkupChars(pr.getTitle()), getPassDaysText(pr.getCreatedAt()), pr.getAuthor().getName(),
+                CollectionUtils.contains(pr.getLabels().iterator(), REFACTORING_LABEL) ? "(\u2699)" : ""
         );
     }
 
