@@ -117,7 +117,7 @@ public class TelegramServiceClient {
                 PR_MESSAGE_TEMPLATE,
                 pr.getIid(), pr.getWebUrl(), pr.getSourceBranch(), pr.getTargetBranch(),
                 escapeMarkupChars(pr.getTitle()), getPassDaysText(pr.getCreatedAt()), pr.getAuthor().getName(),
-                CollectionUtils.contains(pr.getLabels().iterator(), REFACTORING_LABEL) ? "(\u2699)" : ""
+                CollectionUtils.contains(pr.getLabels().iterator(), REFACTORING_LABEL) ? " \u2699" : ""
         );
     }
 
