@@ -1,6 +1,7 @@
 package ru.rnemykin.gitlab.prtbot.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.gitlab4j.api.models.User;
 import org.springframework.boot.context.event.ApplicationReadyEvent;
 import org.springframework.context.event.EventListener;
@@ -14,6 +15,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 @RequiredArgsConstructor
 public class UserStorage {
@@ -25,7 +27,7 @@ public class UserStorage {
 
     @EventListener(ApplicationReadyEvent.class)
     public void afterStart() {
-        userIds = !CollectionUtils.isEmpty(properties.getAuthors())
+        userIds = !CollectionUtils.isEmpty(properties.getAuthorIds())
                 ? properties.getAuthorIds()
                 : properties.getUserNames()
                     .stream()
@@ -36,6 +38,7 @@ public class UserStorage {
     }
 
     public List<Integer> getUserIds() {
+        log.info("userIds {}", userIds);
         return Collections.unmodifiableList(userIds);
     }
 }
