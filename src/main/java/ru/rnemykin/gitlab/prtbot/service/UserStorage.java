@@ -20,19 +20,19 @@ public class UserStorage {
     private static List<Integer> userIds;
 
     private final GitLabServiceClient gitLabClient;
-    private final CheckPullRequestProperties checkPullRequestProperties;
+    private final CheckPullRequestProperties properties;
 
 
     @EventListener(ApplicationReadyEvent.class)
     public void afterStart() {
-        userIds = !CollectionUtils.isEmpty(checkPullRequestProperties.getUserIds())
-                ? checkPullRequestProperties.getUserIds()
-                : checkPullRequestProperties.getUserNames()
-                .stream()
-                .map(gitLabClient::findByName)
-                .filter(Objects::nonNull)
-                .map(User::getId)
-                .collect(Collectors.toList());
+        userIds = !CollectionUtils.isEmpty(properties.getAuthors())
+                ? properties.getAuthorIds()
+                : properties.getUserNames()
+                    .stream()
+                    .map(gitLabClient::findByName)
+                    .filter(Objects::nonNull)
+                    .map(User::getId)
+                    .collect(Collectors.toList());
     }
 
     public List<Integer> getUserIds() {
