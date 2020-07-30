@@ -2,13 +2,13 @@ package ru.rnemykin.gitlab.prtbot.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.gitlab4j.api.models.MergeRequest;
-import org.springframework.data.domain.Example;
 import org.springframework.data.domain.Page;
 import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageFilter;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository;
+import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository.Specifications;
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
@@ -28,9 +28,7 @@ public class PullRequestMessageService extends AbstractEntityService<PullRequest
     }
 
     public Optional<PullRequestMessage> findByPrId(@NotNull Integer pullRequestId) {
-        PullRequestMessage message = new PullRequestMessage();
-        message.setPullRequestId(pullRequestId);
-        return repository.findOne(Example.of(message));
+        return repository.findOne(Specifications.findByPullRequestId(pullRequestId));
     }
 
     public Page<PullRequestMessage> findAll(PullRequestMessageFilter filter) {
