@@ -26,6 +26,7 @@ public class DeleteRegularMessagesJob {
         LocalDate targetDate = LocalDate.now().minusDays(prProperties.getRegularMessagesTtl().toDays());
         List<RegularMessage> messages = regularMessageService.findEarlerDate(targetDate);
         for (RegularMessage message : messages) {
+            log.info("try to delete regularMessage id={}", message.getId());
             if(telegramServiceClient.deleteMessage(message.getMessageId(), message.getChatId())) {
                 regularMessageService.delete(message);
             } else {

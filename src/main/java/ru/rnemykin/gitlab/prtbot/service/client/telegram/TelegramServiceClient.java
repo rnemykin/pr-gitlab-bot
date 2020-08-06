@@ -134,9 +134,10 @@ public class TelegramServiceClient {
     }
 
     private String getAttentionTitle(int authorId) {
-        if(checkPrProperties.isJuniorDeveloper(authorId)) return "\u203C Made by Junior \u203C \n";
-        if(checkPrProperties.isFreshMeat(authorId)) return "\u26A0 Made by Fresh Meat \u26A0 \n";
-        return "";
+        String result = "";
+        if(checkPrProperties.isJuniorDeveloper(authorId)) result += "\u203C Made by Junior \u203C \n";
+        if(checkPrProperties.isFreshMeat(authorId))  result += "\u26A0 Made by Fresh Meat \u26A0 \n";
+        return result;
     }
 
     private String getPassDaysText(Date createdDate) {
