@@ -5,8 +5,6 @@ import lombok.SneakyThrows;
 import org.gitlab4j.api.Constants;
 import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.GitLabApi;
-import org.gitlab4j.api.models.AbstractUser;
-import org.gitlab4j.api.models.AwardEmoji;
 import org.gitlab4j.api.models.MergeRequest;
 import org.gitlab4j.api.models.MergeRequestFilter;
 import org.gitlab4j.api.models.Pipeline;
@@ -30,7 +28,6 @@ import static java.time.ZoneId.systemDefault;
 @Component
 @RequiredArgsConstructor
 public class GitLabServiceClient {
-    private static final String UPVOTE_EMOJI_ID = "thumbsup";
     private final GitLabApi apiClient;
     private final CheckPullRequestProperties checkPrProperties;
 
@@ -77,20 +74,20 @@ public class GitLabServiceClient {
     }
 
     @SneakyThrows
-    public List<String> getUpVoterNames(int projectId, int pullRequestNumber) {
-        return apiClient.getAwardEmojiApi().getMergeRequestAwardEmojis(projectId, pullRequestNumber)
-                .stream()
-                .filter(e -> UPVOTE_EMOJI_ID.equals(e.getName()))
-                .map(AwardEmoji::getUser)
-                .map(AbstractUser::getName)
-                .collect(Collectors.toList());
-    }
-
-    @SneakyThrows
     public Optional<Pipeline> findLastPipeline(int projectId, int pullRequestNumber) {
         return apiClient.getMergeRequestApi()
                 .getMergeRequestPipelinesStream(projectId, pullRequestNumber)
                 .max(Comparator.comparingInt(Pipeline::getId));
+    }
+
+    @SneakyThrows
+    public List<String> getApproverNames(int projectId, int pullRequestNumber) {
+        return apiClient.getMergeRequestApi()
+                .getApprovals(projectId, pullRequestNumber)
+                .getApprovedBy()
+                .stream()
+                .map(User::getName)
+                .collect(Collectors.toList());
     }
 
 }

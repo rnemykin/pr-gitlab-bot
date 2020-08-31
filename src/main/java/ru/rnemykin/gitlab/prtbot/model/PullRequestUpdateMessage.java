@@ -18,7 +18,7 @@ public class PullRequestUpdateMessage {
     private long telegramChatId;
     private int telegramMessageId;
     private MergeRequest request;
-    private List<String> upVoterNames;
+    private List<String> approverNames;
     private Map<String, Long> unresolvedThreadsMap;
     private Pipeline lastPipeline;
 }

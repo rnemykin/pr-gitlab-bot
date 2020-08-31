@@ -50,7 +50,7 @@ import static java.time.temporal.ChronoUnit.DAYS;
 public class TelegramServiceClient {
     private static final String REFACTORING_LABEL = "refactoring";
     private static final Pattern MARKUP_ESCAPE_PATTERN = Pattern.compile("[`*_]");
-    private static final String UP_VOTERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
+    private static final String APPROVERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
     private static final String PR_MESSAGE_TEMPLATE = "{8}[Pull request !{0}]({1})\n`{2}`  \uD83D\uDC49  `{3}` {7}\n\n{4}\nOpened __{5}__ by {6}";
@@ -189,9 +189,9 @@ public class TelegramServiceClient {
             );
         }
 
-        List<String> upVoterNames = data.getUpVoterNames();
-        if (!CollectionUtils.isEmpty(upVoterNames)) {
-            text += MessageFormat.format(UP_VOTERS_MESSAGE_TEMPLATE, upVoterNames.size(), String.join(", ", upVoterNames));
+        List<String> approverNames = data.getApproverNames();
+        if (!CollectionUtils.isEmpty(approverNames)) {
+            text += MessageFormat.format(APPROVERS_MESSAGE_TEMPLATE, approverNames.size(), String.join(", ", approverNames));
         }
 
         text += MessageFormat.format(UPDATE_TIME_TEMPLATE, DTF.format(LocalDateTime.now()));
