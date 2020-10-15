@@ -5,6 +5,7 @@ import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.gitlab4j.api.models.MergeRequest;
 import org.gitlab4j.api.models.Pipeline;
+import org.gitlab4j.api.models.References;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.telegram.telegrambots.ApiContextInitializer;
@@ -53,7 +54,7 @@ public class TelegramServiceClient {
     private static final String APPROVERS_MESSAGE_TEMPLATE = "\n\n\uD83D\uDC4D - {0} by {1}";
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
-    private static final String PR_MESSAGE_TEMPLATE = "{8}[Pull request !{0}]({1})\n`{2}`  \uD83D\uDC49  `{3}` {7}\n\n{4}\nOpened __{5}__ by {6}";
+    private static final String PR_MESSAGE_TEMPLATE = "{8}[Pull request !{0}]({1}) `({9})`\n`{2}`  \uD83D\uDC49  `{3}` {7}\n\n{4}\nOpened __{5}__ by {6}";
     private static final String UPDATE_TIME_TEMPLATE = "\n\nLast check: {0}";
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
     private final TelegramProperties properties;
@@ -125,8 +126,16 @@ public class TelegramServiceClient {
                 getPassDaysText(pr.getCreatedAt()),
                 pr.getAuthor().getName(),
                 getRefactoringFlag(pr.getLabels()),
-                getAttentionTitle(pr.getAuthor().getId())
+                getAttentionTitle(pr.getAuthor().getId()),
+                getProjectName(pr)
         );
+    }
+
+    private String getProjectName(MergeRequest pr) {
+        return Optional.ofNullable(pr.getReferences())
+                .map(References::getFull)
+                .map(name -> name.replace(pr.getReferences().getRelative(), ""))
+                .orElse("");
     }
 
     private String getRefactoringFlag(List<String> labels) {
