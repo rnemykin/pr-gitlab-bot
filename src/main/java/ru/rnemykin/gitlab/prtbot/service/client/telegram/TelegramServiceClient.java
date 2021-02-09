@@ -8,6 +8,7 @@ import org.gitlab4j.api.models.Pipeline;
 import org.gitlab4j.api.models.References;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
@@ -69,15 +70,17 @@ public class TelegramServiceClient {
         ApiContextInitializer.init();
 
         DefaultBotOptions options = ApiContext.getInstance(DefaultBotOptions.class);
-        Authenticator.setDefault(new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(properties.getProxyUser(), properties.getProxyPassword().toCharArray());
-            }
-        });
-        options.setProxyHost(properties.getProxyHost());
-        options.setProxyPort(properties.getProxyPort());
-        options.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+        if (StringUtils.hasText(properties.getProxyHost())) {
+            Authenticator.setDefault(new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(properties.getProxyUser(), properties.getProxyPassword().toCharArray());
+                }
+            });
+            options.setProxyHost(properties.getProxyHost());
+            options.setProxyPort(properties.getProxyPort());
+            options.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+        }
 
         telegramApi = new TelegramLongPollingBot(options) {
             @Override
@@ -144,8 +147,8 @@ public class TelegramServiceClient {
 
     private String getAttentionTitle(int authorId) {
         String result = "";
-        if(checkPrProperties.isJuniorDeveloper(authorId)) result += "\u203C Made by Junior \u203C \n";
-        if(checkPrProperties.isFreshMeat(authorId))  result += "\u26A0 Made by Fresh Meat \u26A0 \n";
+        if (checkPrProperties.isJuniorDeveloper(authorId)) result += "\u203C Made by Junior \u203C \n";
+        if (checkPrProperties.isFreshMeat(authorId)) result += "\u26A0 Made by Fresh Meat \u26A0 \n";
         return result;
     }
 

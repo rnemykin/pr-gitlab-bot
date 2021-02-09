@@ -11,7 +11,7 @@ public class TelegramProperties {
     private String botName;
 
     private String proxyHost;
-    private int proxyPort;
+    private Integer proxyPort;
     private String proxyUser;
     private String proxyPassword;
 }
