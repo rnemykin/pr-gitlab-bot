@@ -9,5 +9,6 @@ import java.util.UUID;
 
 @Repository
 public interface RegularMessageRepository extends JpaRepository<RegularMessage, UUID> {
+
     List<RegularMessage> findAllByCreateDateBefore(LocalDate date);
 }

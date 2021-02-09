@@ -17,6 +17,8 @@ public class CheckPullRequestProperties {
 
     @DurationUnit(ChronoUnit.DAYS)
     private Duration skippPrDaysPassCount;
+
+    @DurationUnit(ChronoUnit.HOURS)
     private Duration regularMessagesTtl;
 
 

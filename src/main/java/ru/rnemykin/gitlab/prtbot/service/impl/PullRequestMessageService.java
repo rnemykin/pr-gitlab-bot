@@ -12,6 +12,8 @@ import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository.Specificatio
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -20,6 +22,7 @@ import java.util.Optional;
 public class PullRequestMessageService extends AbstractEntityService<PullRequestMessage, PullRequestMessageRepository> {
     public PullRequestMessage createMessage(MergeRequest pr, Message msg) {
         PullRequestMessage entity = new PullRequestMessage();
+        entity.setStatus(PullRequestMessage.Status.NEW);
         entity.setChatId(msg.getChatId());
         entity.setMessageId(msg.getMessageId());
         entity.setPullRequestId(pr.getId());
@@ -34,4 +37,9 @@ public class PullRequestMessageService extends AbstractEntityService<PullRequest
     public Page<PullRequestMessage> findAll(PullRequestMessageFilter filter) {
         return repository.findAll(filter, filter.getPage());
     }
+
+    public List<PullRequestMessage> findEarlierDate(LocalDateTime date) {
+        return repository.findAllByCreateDateBefore(date);
+    }
+
 }

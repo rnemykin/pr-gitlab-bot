@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.models.MergeRequest;
 import org.springframework.stereotype.Component;
+import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
 
 import java.util.Collection;
 import java.util.List;
@@ -20,7 +21,8 @@ public class MergedPullRequestProcessStrategy extends AbstractPullRequestProcess
             boolean success = telegramClient.deleteMessage(msg.getMessageId(), msg.getChatId());
             if (success) {
                 log.info("delete PR{number: {}, status: {}}", pr.getIid(), pr.getMergeStatus());
-                prMessageService.delete(msg);
+                msg.setStatus(PullRequestMessage.Status.MERGED);
+                prMessageService.save(msg);
             }
         });
     }
