@@ -15,8 +15,7 @@ app:
   job:
     notifyAboutMergedPr: 0 * 7-19 * * MON-FRI
     notifyAboutOpenedPr: '0 */2 7-19 * * MON-FRI'
-    deleteRegularMessages: 0 59 23 * * *
-
+    deleteRegularMessages: 0 0 8 * * *
 
 spring:
   datasource:
