@@ -11,4 +11,6 @@ import javax.persistence.Table;
 public class PullRequestMessage extends AbstractMessage {
     private Integer pullRequestId;
     private String pullRequestUrl;
+    private Integer pullRequestIid;
+    private Integer projectId;
 }

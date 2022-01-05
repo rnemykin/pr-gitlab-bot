@@ -7,8 +7,8 @@ import org.springframework.stereotype.Service;
 import org.telegram.telegrambots.meta.api.objects.Message;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessage;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageFilter;
-import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository;
-import ru.rnemykin.gitlab.prtbot.model.PullRequestMessageRepository.Specifications;
+import ru.rnemykin.gitlab.prtbot.model.repository.PullRequestMessageRepository;
+import ru.rnemykin.gitlab.prtbot.model.repository.PullRequestMessageRepository.Specifications;
 
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
@@ -24,10 +24,16 @@ public class PullRequestMessageService extends AbstractEntityService<PullRequest
         entity.setMessageId(msg.getMessageId());
         entity.setPullRequestId(pr.getId());
         entity.setPullRequestUrl(pr.getWebUrl());
+        entity.setPullRequestIid(pr.getIid());
+        entity.setProjectId(pr.getProjectId());
         return repository.save(entity);
     }
 
-    public Optional<PullRequestMessage> findByPrId(@NotNull Integer pullRequestId) {
+    public Optional<PullRequestMessage> findByPullRequestUrl(@NotNull String pullRequestUrl) {
+        return repository.findOne(Specifications.findByPullRequestUrl(pullRequestUrl));
+    }
+
+    public Optional<PullRequestMessage> findByPullRequestId(@NotNull Integer pullRequestId) {
         return repository.findOne(Specifications.findByPullRequestId(pullRequestId));
     }
 

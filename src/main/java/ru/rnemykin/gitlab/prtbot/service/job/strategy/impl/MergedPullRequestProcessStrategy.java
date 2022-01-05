@@ -12,10 +12,10 @@ import java.util.stream.Collectors;
 
 @Log4j2
 @Component
-public class MergedPullRequestProcessStrategy extends AbstractPullRequestProcessStrategy {
+public class MergedPullRequestProcessStrategy extends AbstractPullRequestProcessStrategy<MergeRequest> {
     @Override
     protected Consumer<MergeRequest> action() {
-        return pr -> prMessageService.findByPrId(pr.getId()).ifPresent(msg -> {
+        return pr -> prMessageService.findByPullRequestId(pr.getId()).ifPresent(msg -> {
             log.info("process PR{number: {}, status: {}}", pr.getIid(), pr.getMergeStatus());
             boolean success = telegramClient.deleteMessage(msg.getMessageId(), msg.getChatId());
             if (success) {
@@ -26,7 +26,7 @@ public class MergedPullRequestProcessStrategy extends AbstractPullRequestProcess
     }
 
     @Override
-    protected List<MergeRequest> getMergeRequests() {
+    protected List<MergeRequest> get() {
         return userStorage.getUserIds().stream()
                 .map(gitLabClient::findCompletedPullRequests)
                 .flatMap(Collection::stream)
