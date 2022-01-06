@@ -7,6 +7,7 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties("app.telegram")
 public class TelegramProperties {
     private long chatId;
+    private long commentsChatId;
     private String token;
     private String botName;
 
