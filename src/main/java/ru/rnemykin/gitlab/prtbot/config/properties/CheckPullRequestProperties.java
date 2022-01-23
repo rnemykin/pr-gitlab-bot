@@ -24,21 +24,15 @@ public class CheckPullRequestProperties {
 
 
     public boolean isJuniorDeveloper(int id) {
-        return Optional.ofNullable(authors)
-                .orElseGet(Collections::emptyList)
-                .stream().anyMatch(author -> id == author.id && Boolean.TRUE.equals(author.junior));
+        return authors.stream().anyMatch(author -> id == author.id && Boolean.TRUE.equals(author.junior));
     }
 
     public boolean isFreshMeat(int id) {
-        return Optional.ofNullable(authors)
-                .orElseGet(Collections::emptyList)
-                .stream().anyMatch(author -> id == author.id && Boolean.TRUE.equals(author.freshMeat));
+        return authors.stream().anyMatch(author -> id == author.id && Boolean.TRUE.equals(author.freshMeat));
     }
 
     public List<Integer> getAuthorIds() {
-        return Optional.ofNullable(authors)
-                .orElseGet(Collections::emptyList)
-                .stream().map(PrAuthor::getId).collect(toList());
+        return authors.stream().map(PrAuthor::getId).collect(toList());
     }
 
     @Data

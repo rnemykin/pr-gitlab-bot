@@ -62,6 +62,6 @@ public class CommentMessageStrategy implements MessageStrategy {
 
     @Override
     public boolean isApplicable(long senderId) {
-        return !Objects.equals(senderId, TELEGRAM_SENDER_ID);
+        return !Objects.equals(senderId, MESSAGE_FROM_TELEGRAM_SENDER_ID);
     }
 }

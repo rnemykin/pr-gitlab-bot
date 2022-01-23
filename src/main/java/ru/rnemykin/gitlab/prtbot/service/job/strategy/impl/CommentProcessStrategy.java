@@ -8,11 +8,7 @@ import ru.rnemykin.gitlab.prtbot.model.CommentMessage;
 import ru.rnemykin.gitlab.prtbot.service.impl.CommentMessageService;
 
 import java.time.ZoneOffset;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -78,11 +74,11 @@ public class CommentProcessStrategy extends AbstractPullRequestProcessStrategy<C
                 commentMessageService.save(comment, msg);
                 log.info("comment: \"{}\" was posted to telegram with id {}", comment.getText(), comment.getMessageId());
             });
-        } else {
+        } /*else { //убрал, т.к  нет нужды добавлять коменты в гитблаб и телеги, и они будут от одного пользователя
             Integer noteId = gitLabClient.addComment(comment);
             commentMessageService.save(comment, noteId);
             log.info("comment: \"{}\" was posted to pull request with id {}", comment.getText(), comment.getPullRequestIid());
-        }
+        }*/
     }
 
     private void delete(CommentMessage comment) {

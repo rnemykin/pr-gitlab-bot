@@ -26,17 +26,17 @@ public class RegularMessageStrategy implements MessageStrategy {
         RegularMessage msg = new RegularMessage();
         msg.setChatId(message.getChatId());
         msg.setMessageId(message.getMessageId());
-        msg.setPullRequestId(getPullRequest(message).getPullRequestId());
+        msg.setPullRequestId(extractPullRequestId(message));
         regularMessageService.save(msg);
     }
 
-    private PullRequestMessage getPullRequest(Message message) {
+    private Integer extractPullRequestId(Message message) {
         String prUrl = Optional.ofNullable(message.getEntities()).map(a -> a.get(0).getUrl()).orElseThrow();
-        return pullRequestMessageService.findByPullRequestUrl(prUrl).orElse(new PullRequestMessage());
+        return pullRequestMessageService.findByPullRequestUrl(prUrl).orElse(new PullRequestMessage()).getPullRequestId();
     }
 
     @Override
     public boolean isApplicable(long senderId) {
-        return Objects.equals(senderId, TELEGRAM_SENDER_ID);
+        return Objects.equals(senderId, MESSAGE_FROM_TELEGRAM_SENDER_ID);
     }
 }
