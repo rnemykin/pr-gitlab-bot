@@ -3,6 +3,7 @@ package ru.rnemykin.gitlab.prtbot.service.job.strategy;
 import org.gitlab4j.api.Constants;
 import org.gitlab4j.api.Constants.MergeRequestState;
 import org.springframework.stereotype.Component;
+import ru.rnemykin.gitlab.prtbot.service.job.strategy.impl.ProcessTypeStrategy;
 
 import java.util.List;
 import java.util.Map;
@@ -13,13 +14,13 @@ import static java.util.stream.Collectors.toMap;
 
 @Component
 public class PullRequestProcessStrategyFactory {
-    private final Map<MergeRequestState, ProcessStrategy<Constants.MergeRequestState>> strategies;
+    private final Map<MergeRequestState, ProcessTypeStrategy> strategies;
 
-    public PullRequestProcessStrategyFactory(List<ProcessStrategy<Constants.MergeRequestState>> strategies) {
-        this.strategies = strategies.stream().collect(toMap(ProcessStrategy::type, Function.identity()));
+    public PullRequestProcessStrategyFactory(List<ProcessTypeStrategy<Constants.MergeRequestState>> strategies) {
+        this.strategies = strategies.stream().collect(toMap(ProcessTypeStrategy::type, Function.identity()));
     }
 
-    public ProcessStrategy<Constants.MergeRequestState> get(MergeRequestState type) {
+    public ProcessTypeStrategy get(MergeRequestState type) {
         return Optional
                 .ofNullable(strategies.get(type))
                 .orElseThrow(() -> new IllegalArgumentException("unknown type " + type));

@@ -18,9 +18,5 @@ public interface RegularMessageRepository extends JpaRepository<RegularMessage, 
         public static Specification<RegularMessage> findByPullRequestId(Integer pullRequestId) {
             return (root, query, builder) -> builder.equal(root.get("pullRequestId"), pullRequestId);
         }
-        public static Specification<RegularMessage> findByMessageId(Integer messageId) {
-            return (root, query, builder) -> builder.equal(root.get("messageId"), messageId);
-        }
     }
-
 }

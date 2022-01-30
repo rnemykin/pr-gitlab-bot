@@ -1,7 +1,5 @@
 package ru.rnemykin.gitlab.prtbot.service.job.strategy;
 
-public interface ProcessStrategy<T> {
+public interface ProcessStrategy {
     void process();
-
-    T type();
 }

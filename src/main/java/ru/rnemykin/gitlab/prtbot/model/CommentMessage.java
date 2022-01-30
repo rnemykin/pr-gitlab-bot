@@ -17,11 +17,13 @@ public class CommentMessage extends AbstractMessage {
     private Integer noteId;
     private String author;
     private String text;
-    private Source source;
-    private Boolean isProcessed;
     private LocalDateTime createdAt;
 
-    public enum Source {
-        GITLAB, TELEGRAM;
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+        CommentMessage that = (CommentMessage) o;
+        return noteId.equals(that.noteId) && author.equals(that.author) && text.equals(that.text);
     }
 }

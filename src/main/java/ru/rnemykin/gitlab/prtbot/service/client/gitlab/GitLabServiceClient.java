@@ -6,13 +6,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.gitlab4j.api.Constants;
 import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.GitLabApi;
-import org.gitlab4j.api.GitLabApiException;
-import org.gitlab4j.api.models.Discussion;
-import org.gitlab4j.api.models.MergeRequest;
-import org.gitlab4j.api.models.MergeRequestFilter;
-import org.gitlab4j.api.models.Note;
-import org.gitlab4j.api.models.Pipeline;
-import org.gitlab4j.api.models.User;
+import org.gitlab4j.api.models.*;
 import org.springframework.stereotype.Component;
 import ru.rnemykin.gitlab.prtbot.config.properties.CheckPullRequestProperties;
 import ru.rnemykin.gitlab.prtbot.config.properties.TelegramProperties;
@@ -25,13 +19,7 @@ import javax.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.time.ZoneOffset;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -68,38 +56,6 @@ public class GitLabServiceClient {
     }
 
     @SneakyThrows
-    public String getDiscussionId(Integer projectId, Integer mergeRequestId) {
-        return apiClient.getDiscussionsApi().getMergeRequestDiscussions(projectId, mergeRequestId)
-                .stream()
-                .map(Discussion::getId)
-                .findFirst().orElse(null);
-    }
-
-    @SneakyThrows
-    public Integer addComment(CommentMessage comment) {
-        String discussionId = getDiscussionId(comment.getProjectId(), comment.getPullRequestIid());
-        String text = comment.getText() + " | by " + comment.getAuthor();
-        return apiClient.getDiscussionsApi().addMergeRequestThreadNote(
-                        comment.getProjectId(),
-                        comment.getPullRequestIid(),
-                        discussionId,
-                        text,
-                        Date.from(comment.getCreatedAt().toInstant(ZoneOffset.UTC)))
-                .getId();
-    }
-
-    @SneakyThrows
-    public void deleteComment(CommentMessage comment) {
-        String discussionId = getDiscussionId(comment.getProjectId(), comment.getPullRequestIid());
-
-        apiClient.getDiscussionsApi().deleteMergeRequestThreadNote(
-                comment.getProjectId(),
-                comment.getPullRequestIid(),
-                discussionId,
-                comment.getNoteId());
-    }
-
-    @SneakyThrows
     private List<MergeRequest> findPullRequests(int authorId, MergeRequestState state) {
         MergeRequestFilter filter = new MergeRequestFilter();
         filter.setAuthorId(authorId);
@@ -128,17 +84,13 @@ public class GitLabServiceClient {
 
     private CommentMessage toComment(Note note, MergeRequest pr) {
         CommentMessage comment = extractCommentData(note);
-        setPullRequestData(comment, pr);
-
-        comment.setSource(CommentMessage.Source.GITLAB);
-        comment.setChatId(telegramProperties.getCommentsChatId());
+        fillPullRequestData(comment, pr);
 
         return comment;
     }
 
     private CommentMessage extractCommentData(Note note) {
         CommentMessage comment = commentMessageService.findByNoteId(note.getId()).orElse(new CommentMessage());
-        comment.setIsProcessed(comment.equals(new CommentMessage()) ? Boolean.FALSE : Boolean.TRUE);
         comment.setNoteId(note.getId());
         comment.setAuthor(note.getAuthor().getName());
         comment.setText(note.getBody().split(" \\|", 2)[0]);
@@ -147,13 +99,14 @@ public class GitLabServiceClient {
         return comment;
     }
 
-    private void setPullRequestData(CommentMessage comment, MergeRequest pr) {
+    private void fillPullRequestData(CommentMessage comment, MergeRequest pr) {
         comment.setPullRequestId(pr.getId());
         comment.setProjectId(pr.getProjectId());
         comment.setPullRequestIid(pr.getIid());
 
         Integer replyMessageId = regularMessageService.findByPrId(pr.getId()).map(AbstractMessage::getMessageId).orElseThrow();
         comment.setReplyMessageId(replyMessageId);
+        comment.setChatId(telegramProperties.getCommentsChatId());
     }
 
 
@@ -182,5 +135,4 @@ public class GitLabServiceClient {
                 .map(User::getName)
                 .collect(Collectors.toList());
     }
-
 }

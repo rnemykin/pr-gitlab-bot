@@ -14,8 +14,6 @@ import org.telegram.telegrambots.bots.TelegramLongPollingBot;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
-import org.telegram.telegrambots.meta.api.methods.pinnedmessages.PinChatMessage;
-import org.telegram.telegrambots.meta.api.methods.pinnedmessages.UnpinAllChatMessages;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.DeleteMessage;
 import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageText;
@@ -27,7 +25,7 @@ import ru.rnemykin.gitlab.prtbot.config.properties.CheckPullRequestProperties;
 import ru.rnemykin.gitlab.prtbot.config.properties.TelegramProperties;
 import ru.rnemykin.gitlab.prtbot.model.CommentMessage;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
-import ru.rnemykin.gitlab.prtbot.service.MessageStrategy;
+import ru.rnemykin.gitlab.prtbot.service.impl.RegularMessageService;
 
 import javax.annotation.PostConstruct;
 import javax.validation.constraints.NotEmpty;
@@ -57,12 +55,13 @@ public class TelegramServiceClient {
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
     private static final String PR_MESSAGE_TEMPLATE = "{8}[Pull request !{0}]({1}) `({9})`\n`{2}`  \uD83D\uDC49  `{3}` {7}\n\n{4}\nOpened __{5}__ by {6}";
-    private static final String PR_COMMENT_TEMPLATE = "`Comment`: {0} \n`by` {1} `at` {2}";
+    private static final String PR_COMMENT_TEMPLATE = "`{0}:`{1} \nat {2}";
     private static final String UPDATE_TIME_TEMPLATE = "\n\nLast check: {0}";
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private static final long MESSAGE_FROM_TELEGRAM_SENDER_ID = 777000L;
     private final TelegramProperties properties;
     private final CheckPullRequestProperties checkPrProperties;
-    private final List<MessageStrategy> strategies;
+    private final RegularMessageService regularMessageService;
     private TelegramLongPollingBot bot;
 
 
@@ -74,11 +73,13 @@ public class TelegramServiceClient {
             @Override
             public void onUpdateReceived(Update update) {
                 Message message = update.getMessage();
-                if (message != null) {
-                    strategies.stream()
-                            .filter(s -> s.isApplicable(message.getFrom().getId()))
-                            .findFirst().orElseThrow().process(message);
+                if (isPrMessage(message)) {
+                    regularMessageService.save(message);
                 }
+            }
+
+            private boolean isPrMessage(Message message) {
+                return message != null && message.getFrom().getId().equals(MESSAGE_FROM_TELEGRAM_SENDER_ID);
             }
 
             @Override
@@ -130,23 +131,6 @@ public class TelegramServiceClient {
         return Optional.ofNullable(executeMethod(message));
     }
 
-    public boolean exist(CommentMessage comment) {
-        PinChatMessage pinChatMessage = new PinChatMessage();
-        pinChatMessage.setChatId(comment.getChatId().toString());
-        pinChatMessage.setMessageId(comment.getMessageId());
-
-        UnpinAllChatMessages unpin = new UnpinAllChatMessages();
-        unpin.setChatId(comment.getChatId().toString());
-
-        try {
-            bot.execute(pinChatMessage);
-            bot.execute(unpin);
-        } catch (TelegramApiException e) {
-            return false;
-        }
-        return true;
-    }
-
     private String makePrMessageText(MergeRequest pr) {
         return MessageFormat.format(
                 PR_MESSAGE_TEMPLATE,
@@ -166,8 +150,8 @@ public class TelegramServiceClient {
     private String makePrCommentText(CommentMessage comment) {
         return MessageFormat.format(
                 PR_COMMENT_TEMPLATE,
-                comment.getText(),
                 comment.getAuthor(),
+                comment.getText(),
                 comment.getCreatedAt().format(DTF));
     }
 

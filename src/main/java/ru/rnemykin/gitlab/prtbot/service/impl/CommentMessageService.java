@@ -15,17 +15,10 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class CommentMessageService extends AbstractEntityService<CommentMessage, CommentMessageRepository> {
 
-    public CommentMessage save(CommentMessage comment, Message msg) {
+    public void save(CommentMessage comment, Message msg) {
         comment.setChatId(msg.getChatId());
         comment.setMessageId(msg.getMessageId());
-        comment.setIsProcessed(Boolean.TRUE);
-        return repository.save(comment);
-    }
-
-    public CommentMessage save(CommentMessage comment, Integer noteId) {
-        comment.setNoteId(noteId);
-        comment.setIsProcessed(Boolean.TRUE);
-        return repository.save(comment);
+        repository.save(comment);
     }
 
     public Optional<CommentMessage> findByNoteId(@NotNull Integer noteId) {
