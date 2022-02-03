@@ -112,8 +112,9 @@ public class TelegramServiceClient {
         return options;
     }
 
-    public Optional<Message> newPrNotification(MergeRequest pr) {
+    public Optional<Message> newPrNotification(MergeRequest pr, boolean silent) {
         SendMessage message = new SendMessage();
+        message.setDisableNotification(silent);
         message.setChatId(String.valueOf(properties.getChatId()));
         message.setText(makePrMessageText(pr));
         message.disableWebPagePreview();

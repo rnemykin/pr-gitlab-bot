@@ -13,12 +13,14 @@ import ru.rnemykin.gitlab.prtbot.model.repository.PullRequestMessageRepository.S
 import javax.transaction.Transactional;
 import javax.validation.constraints.NotNull;
 import java.util.Optional;
+import java.util.UUID;
 
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class PullRequestMessageService extends AbstractEntityService<PullRequestMessage, PullRequestMessageRepository> {
-    public PullRequestMessage createMessage(MergeRequest pr, Message msg) {
+public class PullRequestMessageService extends DeletableEntityService<PullRequestMessage, PullRequestMessageRepository> {
+
+    public PullRequestMessage createMessage(MergeRequest pr, Message msg, boolean isEmpty) {
         PullRequestMessage entity = new PullRequestMessage();
         entity.setChatId(msg.getChatId());
         entity.setMessageId(msg.getMessageId());
@@ -26,6 +28,11 @@ public class PullRequestMessageService extends AbstractEntityService<PullRequest
         entity.setPullRequestUrl(pr.getWebUrl());
         entity.setPullRequestIid(pr.getIid());
         entity.setProjectId(pr.getProjectId());
+        if (!isEmpty) {
+            UUID id = findByPullRequestId(pr.getId()).map(PullRequestMessage::getId).orElseThrow();
+            entity.setId(id);
+            entity.setDeleted(false);
+        }
         return repository.save(entity);
     }
 
@@ -39,5 +46,10 @@ public class PullRequestMessageService extends AbstractEntityService<PullRequest
 
     public Page<PullRequestMessage> findAll(PullRequestMessageFilter filter) {
         return repository.findAll(filter, filter.getPage());
+    }
+
+    @Override
+    public void delete(PullRequestMessage message) {
+        repository.markDeleted(message);
     }
 }

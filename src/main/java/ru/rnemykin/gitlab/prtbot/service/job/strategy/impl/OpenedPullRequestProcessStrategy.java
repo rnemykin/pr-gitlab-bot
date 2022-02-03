@@ -21,9 +21,10 @@ public class OpenedPullRequestProcessStrategy extends AbstractPullRequestProcess
     protected Consumer<MergeRequest> action() {
         return pr -> {
             Optional<PullRequestMessage> found = prMessageService.findByPullRequestId(pr.getId());
-            if (found.isEmpty()) {
-                Optional<Message> result = telegramClient.newPrNotification(pr);
-                result.ifPresent(msg -> prMessageService.createMessage(pr, msg));
+            boolean isEmpty = found.isEmpty();
+            if (isEmpty || found.get().isDeleted()) {
+                Optional<Message> result = telegramClient.newPrNotification(pr, !isEmpty);
+                result.ifPresent(msg -> prMessageService.createMessage(pr, msg, isEmpty));
                 return;
             }
 

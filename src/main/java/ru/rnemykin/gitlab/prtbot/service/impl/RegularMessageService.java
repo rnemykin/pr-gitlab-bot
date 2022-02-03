@@ -12,7 +12,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class RegularMessageService extends AbstractEntityService<RegularMessage, RegularMessageRepository> {
+public class RegularMessageService extends DeletableEntityService<RegularMessage, RegularMessageRepository> {
 
     private final PullRequestMessageService pullRequestMessageService;
 

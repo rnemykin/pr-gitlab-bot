@@ -13,4 +13,5 @@ public class PullRequestMessage extends AbstractMessage {
     private String pullRequestUrl;
     private Integer pullRequestIid;
     private Integer projectId;
+    private boolean isDeleted;
 }

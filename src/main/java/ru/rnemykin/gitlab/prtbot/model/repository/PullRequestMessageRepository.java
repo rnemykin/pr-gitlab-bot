@@ -10,6 +10,12 @@ import java.util.UUID;
 
 @Repository
 public interface PullRequestMessageRepository extends JpaRepository<PullRequestMessage, UUID>, JpaSpecificationExecutor<PullRequestMessage> {
+
+    default void markDeleted(PullRequestMessage message) {
+        message.setDeleted(Boolean.TRUE);
+        save(message);
+    }
+
     class Specifications {
         public static Specification<PullRequestMessage> findByPullRequestUrl(String pullRequestUrl) {
             return (root, query, builder) -> builder.equal(root.get("pullRequestUrl"), pullRequestUrl);
