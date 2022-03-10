@@ -16,14 +16,15 @@ import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
 @Component
-public class OpenedPullRequestProcessStrategy extends AbstractPullRequestProcessStrategy {
+public class OpenedPullRequestProcessStrategy extends AbstractPullRequestProcessStrategy<MergeRequest> {
     @Override
     protected Consumer<MergeRequest> action() {
         return pr -> {
-            Optional<PullRequestMessage> found = prMessageService.findByPrId(pr.getId());
-            if (found.isEmpty()) {
-                Optional<Message> result = telegramClient.newPrNotification(pr);
-                result.ifPresent(msg -> prMessageService.createMessage(pr, msg));
+            Optional<PullRequestMessage> found = prMessageService.findByPullRequestId(pr.getId());
+            boolean isEmpty = found.isEmpty();
+            if (isEmpty || found.get().isDeleted()) {
+                Optional<Message> result = telegramClient.newPrNotification(pr, !isEmpty);
+                result.ifPresent(msg -> prMessageService.createMessage(pr, msg, isEmpty));
                 return;
             }
 
@@ -45,7 +46,7 @@ public class OpenedPullRequestProcessStrategy extends AbstractPullRequestProcess
     }
 
     @Override
-    protected List<MergeRequest> getMergeRequests() {
+    protected List<MergeRequest> get() {
         return userStorage.getUserIds().stream()
                 .map(gitLabClient::findOpenedPullRequests)
                 .flatMap(Collection::stream)

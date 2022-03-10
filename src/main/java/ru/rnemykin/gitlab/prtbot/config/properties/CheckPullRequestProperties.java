@@ -6,8 +6,11 @@ import org.springframework.boot.convert.DurationUnit;
 
 import java.time.Duration;
 import java.time.temporal.ChronoUnit;
+import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
+
+import static java.util.stream.Collectors.toList;
 
 @Data
 @ConfigurationProperties("app.gitlab.pr")
@@ -29,7 +32,7 @@ public class CheckPullRequestProperties {
     }
 
     public List<Integer> getAuthorIds() {
-        return authors.stream().map(PrAuthor::getId).collect(Collectors.toList());
+        return authors.stream().map(PrAuthor::getId).collect(toList());
     }
 
     @Data

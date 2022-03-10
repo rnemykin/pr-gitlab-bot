@@ -9,10 +9,8 @@ import org.gitlab4j.api.models.References;
 import org.springframework.stereotype.Component;
 import org.springframework.util.CollectionUtils;
 import org.springframework.util.StringUtils;
-import org.telegram.telegrambots.ApiContextInitializer;
 import org.telegram.telegrambots.bots.DefaultBotOptions;
 import org.telegram.telegrambots.bots.TelegramLongPollingBot;
-import org.telegram.telegrambots.meta.ApiContext;
 import org.telegram.telegrambots.meta.TelegramBotsApi;
 import org.telegram.telegrambots.meta.api.methods.BotApiMethod;
 import org.telegram.telegrambots.meta.api.methods.ParseMode;
@@ -22,10 +20,11 @@ import org.telegram.telegrambots.meta.api.methods.updatingmessages.EditMessageTe
 import org.telegram.telegrambots.meta.api.objects.Message;
 import org.telegram.telegrambots.meta.api.objects.Update;
 import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
+import org.telegram.telegrambots.updatesreceivers.DefaultBotSession;
 import ru.rnemykin.gitlab.prtbot.config.properties.CheckPullRequestProperties;
 import ru.rnemykin.gitlab.prtbot.config.properties.TelegramProperties;
+import ru.rnemykin.gitlab.prtbot.model.CommentMessage;
 import ru.rnemykin.gitlab.prtbot.model.PullRequestUpdateMessage;
-import ru.rnemykin.gitlab.prtbot.model.RegularMessage;
 import ru.rnemykin.gitlab.prtbot.service.impl.RegularMessageService;
 
 import javax.annotation.PostConstruct;
@@ -56,42 +55,31 @@ public class TelegramServiceClient {
     private static final String UNRESOLVED_THREADS_MESSAGE_TEMPLATE = "\n\n*Unresolved threads*\n{0}";
     private static final String PIPELINE_MESSAGE_TEMPLATE = "\n\n[Last pipeline]({0}) {1}";
     private static final String PR_MESSAGE_TEMPLATE = "{8}[Pull request !{0}]({1}) `({9})`\n`{2}`  \uD83D\uDC49  `{3}` {7}\n\n{4}\nOpened __{5}__ by {6}";
+    private static final String PR_COMMENT_TEMPLATE = "`{0}:`{1} \nat {2}";
     private static final String UPDATE_TIME_TEMPLATE = "\n\nLast check: {0}";
     private static final DateTimeFormatter DTF = DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm");
+    private static final long MESSAGE_FROM_TELEGRAM_SENDER_ID = 777000L;
     private final TelegramProperties properties;
     private final CheckPullRequestProperties checkPrProperties;
     private final RegularMessageService regularMessageService;
-    private TelegramLongPollingBot telegramApi;
+    private TelegramLongPollingBot bot;
 
 
     @SneakyThrows
     @PostConstruct
     private void initBotApi() {
-        ApiContextInitializer.init();
 
-        DefaultBotOptions options = ApiContext.getInstance(DefaultBotOptions.class);
-        if (StringUtils.hasText(properties.getProxyHost())) {
-            Authenticator.setDefault(new Authenticator() {
-                @Override
-                protected PasswordAuthentication getPasswordAuthentication() {
-                    return new PasswordAuthentication(properties.getProxyUser(), properties.getProxyPassword().toCharArray());
-                }
-            });
-            options.setProxyHost(properties.getProxyHost());
-            options.setProxyPort(properties.getProxyPort());
-            options.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
-        }
-
-        telegramApi = new TelegramLongPollingBot(options) {
+        bot = new TelegramLongPollingBot(botOptions()) {
             @Override
             public void onUpdateReceived(Update update) {
                 Message message = update.getMessage();
-                if (!Boolean.TRUE.equals(message.getFrom().getBot())) {
-                    RegularMessage msg = new RegularMessage();
-                    msg.setChatId(message.getChatId());
-                    msg.setMessageId(message.getMessageId());
-                    regularMessageService.save(msg);
+                if (isPrMessage(message)) {
+                    regularMessageService.save(message);
                 }
+            }
+
+            private boolean isPrMessage(Message message) {
+                return message != null && message.getFrom().getId().equals(MESSAGE_FROM_TELEGRAM_SENDER_ID);
             }
 
             @Override
@@ -105,14 +93,40 @@ public class TelegramServiceClient {
             }
         };
 
-        new TelegramBotsApi().registerBot(telegramApi);
+        new TelegramBotsApi(DefaultBotSession.class).registerBot(bot);
     }
 
+    private DefaultBotOptions botOptions() {
+        DefaultBotOptions options = new DefaultBotOptions();
+        if (StringUtils.hasText(properties.getProxyHost())) {
+            Authenticator.setDefault(new Authenticator() {
+                @Override
+                protected PasswordAuthentication getPasswordAuthentication() {
+                    return new PasswordAuthentication(properties.getProxyUser(), properties.getProxyPassword().toCharArray());
+                }
+            });
+            options.setProxyHost(properties.getProxyHost());
+            options.setProxyPort(properties.getProxyPort());
+            options.setProxyType(DefaultBotOptions.ProxyType.SOCKS5);
+        }
+        return options;
+    }
 
-    public Optional<Message> newPrNotification(MergeRequest pr) {
+    public Optional<Message> newPrNotification(MergeRequest pr, boolean silent) {
         SendMessage message = new SendMessage();
-        message.setChatId(properties.getChatId());
+        message.setDisableNotification(silent);
+        message.setChatId(String.valueOf(properties.getChatId()));
         message.setText(makePrMessageText(pr));
+        message.disableWebPagePreview();
+        message.setParseMode(ParseMode.MARKDOWN);
+        return Optional.ofNullable(executeMethod(message));
+    }
+
+    public Optional<Message> newPrComment(CommentMessage comment) {
+        SendMessage message = new SendMessage();
+        message.setReplyToMessageId(comment.getReplyMessageId());
+        message.setChatId(String.valueOf(comment.getChatId()));
+        message.setText(makePrCommentText(comment));
         message.disableWebPagePreview();
         message.setParseMode(ParseMode.MARKDOWN);
         return Optional.ofNullable(executeMethod(message));
@@ -132,6 +146,14 @@ public class TelegramServiceClient {
                 getAttentionTitle(pr.getAuthor().getId()),
                 getProjectName(pr)
         );
+    }
+
+    private String makePrCommentText(CommentMessage comment) {
+        return MessageFormat.format(
+                PR_COMMENT_TEMPLATE,
+                comment.getAuthor(),
+                comment.getText(),
+                comment.getCreatedAt().format(DTF));
     }
 
     private String getProjectName(MergeRequest pr) {
@@ -157,14 +179,14 @@ public class TelegramServiceClient {
         return daysCount == 0 ? "today" : (daysCount == 1 ? "1 day" : daysCount + " days") + " ago \uD83D\uDE31";
     }
 
-    public boolean deleteMessage(int messageId, long chatId) {
-        Boolean result = executeMethod(new DeleteMessage(chatId, messageId));
+    public boolean deleteMessage(int messageId, Long chatId) {
+        Boolean result = executeMethod(new DeleteMessage(chatId.toString(), messageId));
         return Boolean.TRUE.equals(result);
     }
 
     private <T extends Serializable> T executeMethod(BotApiMethod<T> method) {
         try {
-            return telegramApi.execute(method);
+            return bot.execute(method);
         } catch (TelegramApiException ex) {
             log.error("can't execute method {}", method, ex);
             return null;
@@ -174,7 +196,7 @@ public class TelegramServiceClient {
     public void updatePrMessage(PullRequestUpdateMessage data) {
         EditMessageText editMsg = new EditMessageText();
         editMsg.setText(makeUpdatePrMessageText(data));
-        editMsg.setChatId(data.getTelegramChatId());
+        editMsg.setChatId(String.valueOf(data.getTelegramChatId()));
         editMsg.setMessageId(data.getTelegramMessageId());
         editMsg.setParseMode(ParseMode.MARKDOWN);
         editMsg.disableWebPagePreview();

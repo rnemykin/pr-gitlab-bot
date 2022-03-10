@@ -9,4 +9,5 @@ import javax.persistence.Table;
 @Table
 @Entity
 public class RegularMessage extends AbstractMessage {
+    private Integer pullRequestId;
 }
