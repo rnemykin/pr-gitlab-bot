@@ -6,7 +6,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.gitlab4j.api.Constants;
 import org.gitlab4j.api.Constants.MergeRequestState;
 import org.gitlab4j.api.GitLabApi;
-import org.gitlab4j.api.models.*;
+import org.gitlab4j.api.models.Discussion;
+import org.gitlab4j.api.models.MergeRequest;
+import org.gitlab4j.api.models.MergeRequestFilter;
+import org.gitlab4j.api.models.Note;
+import org.gitlab4j.api.models.Pipeline;
+import org.gitlab4j.api.models.User;
 import org.springframework.stereotype.Component;
 import ru.rnemykin.gitlab.prtbot.config.properties.CheckPullRequestProperties;
 import ru.rnemykin.gitlab.prtbot.config.properties.TelegramProperties;
@@ -19,7 +24,12 @@ import javax.validation.constraints.NotEmpty;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
-import java.util.*;
+import java.util.Collection;
+import java.util.Comparator;
+import java.util.Date;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -103,10 +113,11 @@ public class GitLabServiceClient {
         comment.setPullRequestId(pr.getId());
         comment.setProjectId(pr.getProjectId());
         comment.setPullRequestIid(pr.getIid());
-
-        Integer replyMessageId = regularMessageService.findByPrId(pr.getId()).map(AbstractMessage::getMessageId).orElseThrow();
-        comment.setReplyMessageId(replyMessageId);
         comment.setChatId(telegramProperties.getCommentsChatId());
+
+        regularMessageService.findByPrId(pr.getId())
+                .map(AbstractMessage::getMessageId)
+                .ifPresent(comment::setReplyMessageId);
     }
 
 
